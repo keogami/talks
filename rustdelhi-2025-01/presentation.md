@@ -41,7 +41,7 @@ My Qualms
 
 <!-- column: 1 -->
 
-- Bland UI, political branding
+- Bland UI
 - No fuzzy search (I can't spell Chattarpur)
 - Funky map interface (No pinch zoom, really?)
 - No offline support (Can't plan when in tunnels)
@@ -67,6 +67,7 @@ Missing Features
 - Location-to-location journey planning
 - Crowd indicators
 - Multi-point trip planning
+- Special advisories: "two blue lines?", "which side door opens?", etc
 
 <!-- reset_layout -->
 
@@ -109,6 +110,7 @@ The Plan
 - Solve routing
 - Make it **fast**
 - Make it cross-platform (including web)
+- Let the community do its magic
 
 <!-- reset_layout -->
 
@@ -277,12 +279,12 @@ Rayon
 
 <!-- font_size: 2 -->
 
-A data parallelism library for Rust
+How does rayon work
 
-- Work-stealing thread pool
-- You already know the 
-- Results collected **without locks**
+- Uses work-stealing thread pool
+- You already know the api
 - Just change `.iter()` to `.par_iter()`
+- Results collected **without locks**
 - Also! Finally a real world use for linked lists lol
 
 ![](rayon-diagram.png)
@@ -524,35 +526,6 @@ cargo build --example interactive --target wasm32-wasip1 --release
 
 # Run with wasmer
 wasmer run target/wasm32-wasi/release/interactive.wasm
-```
-
-<!-- end_slide -->
-
-<!-- font_size: 2 -->
-
-Running with Wasmer (cont.)
-===
-
-```
-Enter source stop: rajiv chow
-
-Matches:
-  [1] Rajiv Chowk
-
-Select [1-1]: 1
-
-Enter target stop: chattpur
-
-Matches:
-  [1] Chhattarpur
-
-Select [1-1]: 1
-
-Journey from Rajiv Chowk to Chhattarpur:
-  Arrival: 37m 23s seconds
-
-  Route:
-    [YELLOW_Samaypur Badli to Huda City Centre] Rajiv Chowk
 ```
 
 <!-- end_slide -->
