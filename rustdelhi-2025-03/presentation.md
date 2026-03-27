@@ -1,6 +1,6 @@
 ---
 theme:
-  name: catppuccin-latte
+  name: gruvbox-dark
 ---
 
 <!-- font_size: 3 -->
@@ -26,9 +26,19 @@ https://linkedin.com/in/keogami--
 
 <!-- end_slide -->
 
+
+The Terminal
+===
+
+![](tty.jpg)
+
+<!-- reset_layout -->
+
+<!-- end_slide -->
+
 <!-- jump_to_middle -->
 
-Have you seen these?
+What can you even do with the terminal
 ===
 
 <!-- end_slide -->
@@ -51,7 +61,7 @@ Charm's Crush
 
 <!-- font_size: 2 -->
 
-![](charm-crush.png)
+![](charm-crush.gif)
 
 <!-- end_slide -->
 
@@ -77,17 +87,6 @@ Helix
 
 <!-- end_slide -->
 
-Bacon
-===
-
-<!-- speaker_note: Rust's own background code checker - TUI for cargo diagnostics -->
-
-<!-- font_size: 2 -->
-
-![](bacon.png)
-
-<!-- end_slide -->
-
 ani-cli
 ===
 
@@ -95,7 +94,7 @@ ani-cli
 
 <!-- font_size: 2 -->
 
-![](ani-cli.png)
+![](ani-cli.gif)
 
 <!-- end_slide -->
 
@@ -124,7 +123,7 @@ The TUI Iceberg
 
 <!-- font_size: 2 -->
 
-![](iceberg-meme.png)
+![](ice-berg.jpg)
 
 <!-- end_slide -->
 
@@ -158,9 +157,146 @@ Crates like **tuirealm** try to give you the full framework experience:
 
 <!-- pause -->
 
-Sounds great, right?
+![](bigass-elm.png)
 
 <!-- reset_layout -->
+
+<!-- end_slide -->
+
+TUI Frameworks: tuirealm in Action
+===
+
+<!-- speaker_note: Show the Elm-style API - Model, Msg, Update, View -->
+
+<!-- font_size: 2 -->
+
+```rust +line_numbers
+struct Model {
+    counter: i32,
+}
+
+enum Msg {
+    IncrementCounter,
+}
+
+impl Update<Msg> for Model {
+    // ...
+}
+
+impl View for Model {
+    // ...
+}
+```
+
+<!-- end_slide -->
+
+TUI Frameworks: Cmd
+===
+
+<!-- speaker_note: Cmd abstracts user input into operations your component understands -->
+
+<!-- font_size: 2 -->
+
+```rust +line_numbers
+pub enum Cmd {
+    Type(char),
+    Move(Direction),
+    Scroll(Direction),
+    GoTo(Position),
+    Submit,
+    Delete,
+    Cancel,
+    Toggle,
+    Change,
+    Tick,
+    Custom(&'static str),
+    None,
+}
+```
+
+<!-- end_slide -->
+
+TUI Frameworks: Component
+===
+
+<!-- speaker_note: Component::on maps raw Events into your app's Msg type -->
+
+<!-- font_size: 2 -->
+
+```rust +line_numbers
+struct MyCounter;
+
+impl Component<Msg, NoUserEvent> for MyCounter {
+    fn on(&mut self, ev: Event<NoUserEvent>) -> Option<Msg> {
+        match ev {
+            Event::Keyboard(KeyEvent {
+                code: Key::Char('+'), ..
+            }) => {
+                self.perform(Cmd::Custom("increment"));
+                Some(Msg::IncrementCounter)
+            }
+            _ => None,
+        }
+    }
+}
+```
+
+<!-- end_slide -->
+
+TUI Frameworks: The Update Loop
+===
+
+<!-- speaker_note: The update function ties it all together - receive Msg, update Model -->
+
+<!-- font_size: 2 -->
+
+```rust +line_numbers
+impl Update<Msg> for Model {
+    fn update(&mut self, msg: Option<Msg>) -> Option<Msg> {
+        match msg {
+            Some(Msg::IncrementCounter) => {
+                self.counter += 1;
+                None
+            }
+            _ => None,
+        }
+    }
+}
+```
+
+<!-- end_slide -->
+
+TUI Frameworks: Putting It Together
+===
+
+<!-- speaker_note: The main loop - init terminal, mount components, poll and redraw -->
+
+<!-- font_size: 2 -->
+
+```rust +line_numbers
+fn main() {
+    // init terminal
+    let mut terminal = CrosstermTerminal::new(stdout());
+    terminal.enable_raw_mode().unwrap();
+    terminal.enter_alternate_screen().unwrap();
+
+    // mount components
+    let mut app = Application::init(EventListenerCfg::default());
+    app.mount("counter", Box::new(MyCounter));
+    app.active("counter").unwrap();
+
+    // redraw loop
+    loop {
+        app.view("counter", &mut terminal.frame(), area);
+        terminal.draw().unwrap();
+
+        let messages = app.tick(PollStrategy::Once);
+        for msg in messages {
+            model.update(msg);
+        }
+    }
+}
+```
 
 <!-- end_slide -->
 
@@ -288,6 +424,66 @@ Why do they exist?
   - Alternate screen buffer
 
 <!-- reset_layout -->
+
+<!-- end_slide -->
+
+Terminal Wrappers: Crossterm in Action
+===
+
+<!-- speaker_note: Show the basic crossterm setup - raw mode, alternate screen, event loop -->
+
+<!-- font_size: 2 -->
+
+```rust +line_numbers
+use crossterm::{
+    terminal::{enable_raw_mode, EnterAlternateScreen},
+    event::{self, Event, KeyCode},
+    execute,
+};
+
+fn main() -> std::io::Result<()> {
+    enable_raw_mode()?;
+    execute!(std::io::stdout(), EnterAlternateScreen)?;
+
+    loop {
+        if let Event::Key(key) = event::read()? {
+            if key.code == KeyCode::Char('q') { break; }
+        }
+    }
+    Ok(())
+}
+```
+
+<!-- end_slide -->
+
+Terminal Wrappers: Styling & Cursor
+===
+
+<!-- speaker_note: Crossterm gives you cursor movement and styled text output via execute! macro -->
+
+<!-- font_size: 2 -->
+
+```rust +line_numbers
+use crossterm::{
+    cursor::MoveTo,
+    style::{Color, Print, SetForegroundColor, Stylize},
+    execute,
+};
+
+fn main() -> std::io::Result<()> {
+    let mut out = std::io::stdout();
+
+    execute!(
+        out,
+        MoveTo(5, 10),
+        SetForegroundColor(Color::Red),
+        Print("Hello, Terminal!".bold()),
+        MoveTo(5, 12),
+        SetForegroundColor(Color::Green),
+        Print("Crossterm makes it easy"),
+    )
+}
+```
 
 <!-- end_slide -->
 
@@ -428,6 +624,76 @@ This is what **every** TUI library does under the hood.
 
 <!-- end_slide -->
 
+Anatomy of Escape Sequences
+===
+
+<!-- speaker_note: Break down the structure so the audience can read any sequence they encounter -->
+
+<!-- font_size: 2 -->
+
+<!-- column_layout: [1, 5, 1] -->
+
+<!-- column: 1 -->
+
+**CSI — Control Sequence Introducer**
+
+- Structure: `ESC [ <params> <final byte>`
+- `\x1B[` is the introducer
+- `<params>` are `;`-separated numbers
+- `<final byte>` is the command letter
+- Example: `\x1B[5;10H` → ESC + `[` + row `5` + `;` + col `10` + `H` (cursor position)
+
+<!-- pause -->
+
+**OSC — Operating System Command**
+
+- Structure: `ESC ] <code> ; <data> BEL`
+- `\x1B]` is the introducer
+- `<code>` identifies the command
+- `<data>` is the payload
+- Terminated by `\x07` (BEL) or `\x1B\\` (ST)
+- Example: `\x1B]8;;URL\x07` → ESC + `]` + code `8` + `;;` + URL + BEL
+
+<!-- pause -->
+
+Full list: `man console_codes` or https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+
+<!-- reset_layout -->
+
+<!-- end_slide -->
+
+What Else Can Escape Sequences Do?
+===
+
+<!-- speaker_note: This is where it gets wild - terminals can do way more than most people realize -->
+
+<!-- font_size: 2 -->
+
+<!-- column_layout: [1, 5, 1] -->
+
+<!-- column: 1 -->
+
+**CSI — Control Sequence Introducer** (`\x1B[...`)
+
+- `\x1B[?1049h` — Switch to **alternate screen buffer**
+- `\x1B[5;15r` — Set a **scroll region** (only rows 5–15 scroll)
+- `\x1B[6n` — **Query cursor position** (terminal replies back!)
+- `\x1B[>1u` — Enable **Kitty keyboard protocol**
+
+<!-- pause -->
+
+**OSC — Operating System Command** (`\x1B]...`)
+
+- `\x1B]8;;URL\x07` — Clickable **hyperlinks**
+- `\x1B]52;c;BASE64\x07` — Read/write the **system clipboard**
+- `\x1B]1337;File=inline=1:BASE64\x07` — **Inline images** (iTerm2 protocol)
+- `\x1B_Gf=100,a=T;BASE64\x1B\\` — **Inline images** (Kitty graphics protocol)
+- `\x1B]11;?\x07` — Query **background color** (light/dark detection)
+
+<!-- reset_layout -->
+
+<!-- end_slide -->
+
 <!-- jump_to_middle -->
 
 <!-- font_size: 3 -->
@@ -452,11 +718,7 @@ PoppingBoba
 
 A Rust implementation of Go's **bubbletea** — for **ratatui**
 
-![](bubbletea-example.gif)
-
-<!-- pause -->
-
-The Elm Architecture, in your terminal, in Rust.
+![](bubbles.png)
 
 <!-- reset_layout -->
 
